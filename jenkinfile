@@ -1,13 +1,17 @@
 pipeline {
     agent any
-     tools {
-            nodejs 'NodeJS'
+
+    tools {
+        nodejs 'NodeJS'  // Make sure 'NodeJS' is configured in Jenkins Global Tool Configuration
+        maven 'Maven'    // Make sure Maven is configured in Jenkins Global Tool Configuration
     }
+
     environment {
         // Define environment variables
-        DOCKER_HUB_CREDENTIALS_ID = '03d192ab-0ad5-461f-832b-31a79bd24476'  // Jenkins credentials ID for Docker Hub login
-        DOCKER_HUB_REPO = 'https://github.com/Priyadharshinis0612/devopsproject'   // Replace with your Docker Hub repo (e.g., 'username/repository')
+        DOCKER_HUB_CREDENTIALS_ID = '03d192ab-0ad5-461f-832b-31a79bd24476'  // Docker Hub credentials ID
+        DOCKER_HUB_REPO = 'priyadharshinis0612/devopsproject'  // Docker Hub repository (replace with your actual repo)
     }
+
     stages {
         stage('Checkout') {
             steps {
@@ -15,21 +19,38 @@ pipeline {
                 git branch: 'main', credentialsId: '03d192ab-0ad5-461f-832b-31a79bd24476', url: 'https://github.com/Priyadharshinis0612/devopsproject'
             }
         }
+        
         stage('Build') {
             steps {
-                // Example build step (adjust to your environment)
+                // Build the project with Maven
                 sh 'mvn clean install'
             }
         }
+
         stage('Test') {
             steps {
-                // Run tests
+                // Run tests with Maven
                 sh 'mvn test'
             }
         }
+
+        stage('Docker Build and Push') {
+            steps {
+                script {
+                    // Build Docker image and push to Docker Hub
+                    docker.withRegistry('', DOCKER_HUB_CREDENTIALS_ID) {
+                        // Build Docker image with 'latest' tag
+                        def appImage = docker.build("${DOCKER_HUB_REPO}:latest")
+                        // Push the image to Docker Hub
+                        appImage.push()
+                    }
+                }
+            }
+        }
+
         stage('Deploy') {
             steps {
-                // Deploy step (adjust to your environment)
+                // Deploy step, assuming deploy.sh exists and is executable
                 sh './deploy.sh'
             }
         }
