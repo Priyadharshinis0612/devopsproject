@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout code from Git repository
+                git branch: 'main', credentialsId: '03d192ab-0ad5-461f-832b-31a79bd24476', url: 'https://github.com/Priyadharshinis0612/devopsproject'
+            }
+        }
+        stage('Build') {
+            steps {
+                // Example build step (adjust to your environment)
+                sh 'mvn clean install'
+            }
+        }
+        stage('Test') {
+            steps {
+                // Run tests
+                sh 'mvn test'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                // Deploy step (adjust to your environment)
+                sh './deploy.sh'
+            }
+        }
+    }
+}
